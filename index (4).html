@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Web Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .calculator {
+      background-color: #1e293b;
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-width: 360px;
+      border: 1px solid #334155;
+    }
+    .display {
+      background-color: #0f172a;
+      border-radius: 12px;
+      padding: 20px 16px;
+      margin-bottom: 20px;
+      text-align: right;
+      border: 1px solid #334155;
+      word-wrap: break-word;
+      word-break: break-all;
+    }
+    .display .expression {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      min-height: 20px;
+    }
+    .display .result {
+      font-size: 2.2rem;
+      color: #f8fafc;
+      font-weight: 600;
+      margin-top: 5px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    button {
+      background-color: #334155;
+      color: #f8fafc;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    button:hover {
+      background-color: #475569;
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .btn-operator {
+      background-color: #38bdf8;
+      color: #0f172a;
+    }
+    .btn-operator:hover {
+      background-color: #7dd3fc;
+    }
+    .btn-action {
+      background-color: #ef4444;
+      color: #ffffff;
+    }
+    .btn-action:hover {
+      background-color: #f87171;
+    }
+    .btn-equal {
+      background-color: #6366f1;
+      color: #ffffff;
+      grid-column: span 2;
+    }
+    .btn-equal:hover {
+      background-color: #818cf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <div class="display">
+      <div class="expression" id="expression"></div>
+      <div class="result" id="result">0</div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-action" onclick="clearDisplay()">AC</button>
+      <button class="btn-action" onclick="deleteChar()">⌫</button>
+      <button class="btn-operator" onclick="appendInput('%')">%</button>
+      <button class="btn-operator" onclick="appendInput('/')">÷</button>
+
+      <button onclick="appendInput('7')">7</button>
+      <button onclick="appendInput('8')">8</button>
+      <button onclick="appendInput('9')">9</button>
+      <button class="btn-operator" onclick="appendInput('*')">×</button>
+
+      <button onclick="appendInput('4')">4</button>
+      <button onclick="appendInput('5')">5</button>
+      <button onclick="appendInput('6')">6</button>
+      <button class="btn-operator" onclick="appendInput('-')">−</button>
+
+      <button onclick="appendInput('1')">1</button>
+      <button onclick="appendInput('2')">2</button>
+      <button onclick="appendInput('3')">3</button>
+      <button class="btn-operator" onclick="appendInput('+')">+</button>
+
+      <button onclick="appendInput('0')">0</button>
+      <button onclick="appendInput('.')">.</button>
+      <button class="btn-equal" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    const expressionEl = document.getElementById('expression');
+    const resultEl = document.getElementById('result');
+    let currentInput = '';
+
+    function appendInput(val) {
+      if (resultEl.innerText === 'Error') clearDisplay();
+      currentInput += val;
+      updateDisplay();
+    }
+
+    function clearDisplay() {
+      currentInput = '';
+      expressionEl.innerText = '';
+      resultEl.innerText = '0';
+    }
+
+    function deleteChar() {
+      currentInput = currentInput.slice(0, -1);
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      expressionEl.innerText = currentInput.replace(/\*/g, '×').replace(/\//g, '÷');
+    }
+
+    function calculate() {
+      try {
+        if (!currentInput) return;
+        // Parse percentages correctly (e.g. 50% -> 50/100)
+        let formattedInput = currentInput.replace(/%/g, '/100');
+        let evalResult = eval(formattedInput);
+
+        // Handle division by zero or invalid numbers
+        if (!isFinite(evalResult)) {
+          resultEl.innerText = 'Error';
+          return;
+        }
+
+        // Format decimal precision
+        evalResult = Math.round(evalResult * 1e8) / 1e8;
+
+        resultEl.innerText = evalResult;
+        currentInput = evalResult.toString();
+      } catch (err) {
+        resultEl.innerText = 'Error';
+      }
+    }
+
+    // Keyboard controls support
+    window.addEventListener('keydown', (e) => {
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.') appendInput(e.key);
+      if (['+', '-', '*', '/', '%'].includes(e.key)) appendInput(e.key);
+      if (e.key === 'Enter' || e.key === '=') calculate();
+      if (e.key === 'Backspace') deleteChar();
+      if (e.key === 'Escape') clearDisplay();
+    });
+  </script>
+</body>
+</html>
